@@ -1,0 +1,19 @@
+{
+  "name": "Disco Lights",
+  "short_name": "Disco",
+  "description": "A spinning, sparkling disco light for dance parties.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#050014",
+  "theme_color": "#050014",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
