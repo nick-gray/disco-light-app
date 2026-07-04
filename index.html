@@ -12,6 +12,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="description" content="A spinning, sparkling disco light for dance parties." />
     <title>Disco Lights 🪩</title>
+    <script>
+      // Mic access requires a secure context — bounce http:// to https://
+      // (skips localhost/127.0.0.1 so local dev over plain http still works).
+      if (
+        location.protocol === 'http:' &&
+        !['localhost', '127.0.0.1'].includes(location.hostname)
+      ) {
+        location.replace('https:' + location.href.slice(location.protocol.length))
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
