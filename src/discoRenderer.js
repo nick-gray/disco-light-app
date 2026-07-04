@@ -68,12 +68,12 @@ export function createDiscoRenderer(initialTheme) {
     return lerpColor(transition.from[prop], transition.to[prop], t)
   }
 
-  function render(ctx, width, height, now, level) {
+  function render(ctx, width, height, now, level, sparkFactor = 1) {
     if (lastTime === null) lastTime = now
     const dt = clamp((now - lastTime) / 1000, 0, 0.05)
     lastTime = now
 
-    globalAngle += (0.12 + level * 0.55) * dt
+    globalAngle += (0.12 + level * 0.55) * sparkFactor * dt
 
     // Background
     const bgInner = colorFromArray('background', 0, now)
@@ -91,7 +91,7 @@ export function createDiscoRenderer(initialTheme) {
 
     // Rotating colour beams
     ctx.globalCompositeOperation = 'lighter'
-    const beamLength = Math.min(width, height) * (0.5 + level * 0.35)
+    const beamLength = Math.min(width, height) * clamp(0.5 + level * 0.35, 0, 1) * clamp(sparkFactor, 0.4, 1.8)
     beams.forEach((beam) => {
       const wobble = Math.sin(now / 1000 * beam.wobbleSpeed + beam.wobble) * 0.06
       const angle = globalAngle + (beam.i / BEAM_COUNT) * Math.PI * 2 + wobble
@@ -99,10 +99,10 @@ export function createDiscoRenderer(initialTheme) {
       const x2 = Math.cos(angle) * beamLength
       const y2 = Math.sin(angle) * beamLength
       const grad = ctx.createLinearGradient(0, 0, x2, y2)
-      grad.addColorStop(0, toRgba(color, 0.5 + level * 0.35))
+      grad.addColorStop(0, toRgba(color, clamp((0.5 + level * 0.35) * sparkFactor, 0, 1)))
       grad.addColorStop(1, toRgba(color, 0))
       ctx.strokeStyle = grad
-      ctx.lineWidth = Math.min(width, height) * (0.045 + level * 0.03)
+      ctx.lineWidth = Math.min(width, height) * clamp((0.045 + level * 0.03) * sparkFactor, 0.01, 0.12)
       ctx.lineCap = 'round'
       ctx.beginPath()
       ctx.moveTo(0, 0)
@@ -133,7 +133,7 @@ export function createDiscoRenderer(initialTheme) {
       const gx = Math.cos(angle) * ballR * 0.72
       const gy = Math.sin(angle) * ballR * 0.72
       const twinkle = (Math.sin(now / 260 + glint.phase) + 1) / 2
-      const bright = twinkle * (0.5 + level * 0.5)
+      const bright = clamp(twinkle * (0.5 + level * 0.5) * sparkFactor, 0, 1)
       ctx.beginPath()
       ctx.arc(gx, gy, ballR * 0.06, 0, Math.PI * 2)
       ctx.fillStyle = toRgba([255, 255, 255], bright)
@@ -148,13 +148,13 @@ export function createDiscoRenderer(initialTheme) {
     ctx.globalCompositeOperation = 'lighter'
     sparkles.forEach((p) => {
       const twinkle = (Math.sin((now / 1000) * p.speed + p.phase) + 1) / 2
-      const alpha = twinkle * (0.55 + level * 0.45)
+      const alpha = clamp(twinkle * (0.55 + level * 0.45) * sparkFactor, 0, 1)
       if (twinkle < 0.02 && Math.random() < 0.02) {
         p.x = Math.random()
         p.y = Math.random()
       }
       const color = colorFromArray('sparkleColors', p.colorIndex, now)
-      const size = p.size * (0.7 + twinkle * 0.9)
+      const size = p.size * (0.7 + twinkle * 0.9) * clamp(sparkFactor, 0.5, 1.8)
       const px = p.x * width
       const py = p.y * height
       ctx.beginPath()

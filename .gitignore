@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Local Claude Code session/tooling files (not part of the app)
+.claude/settings.local.json
+.claude/*.lock
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

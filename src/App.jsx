@@ -4,6 +4,14 @@ import { useDiscoLights } from './useDiscoLights'
 import './App.css'
 
 const STORAGE_KEY = 'disco-light-theme'
+const SPARK_STORAGE_KEY = 'disco-light-spark'
+
+const SPARK_LEVELS = [
+  { id: 'calm', label: 'Calm', emoji: '✨', factor: 0.55 },
+  { id: 'party', label: 'Party', emoji: '🌟', factor: 1 },
+  { id: 'max', label: 'Max', emoji: '💥', factor: 1.7 },
+]
+const DEFAULT_SPARK_ID = 'party'
 
 const MIC_LABEL = {
   off: 'Turn mic on 🎙️',
@@ -24,9 +32,20 @@ function App() {
   })
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [sparkLevelId, setSparkLevelId] = useState(() => {
+    try {
+      return localStorage.getItem(SPARK_STORAGE_KEY) || DEFAULT_SPARK_ID
+    } catch {
+      return DEFAULT_SPARK_ID
+    }
+  })
 
   const theme = useMemo(() => getThemeById(themeId), [themeId])
-  const { micStatus, enableMic, disableMic } = useDiscoLights(canvasRef, theme)
+  const sparkFactor = useMemo(
+    () => (SPARK_LEVELS.find((s) => s.id === sparkLevelId) || SPARK_LEVELS[1]).factor,
+    [sparkLevelId]
+  )
+  const { micStatus, enableMic, disableMic } = useDiscoLights(canvasRef, theme, sparkFactor)
 
   useEffect(() => {
     try {
@@ -35,6 +54,14 @@ function App() {
       // private browsing etc. — fine to skip persisting
     }
   }, [themeId])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SPARK_STORAGE_KEY, sparkLevelId)
+    } catch {
+      // private browsing etc. — fine to skip persisting
+    }
+  }, [sparkLevelId])
 
   useEffect(() => {
     function onFsChange() {
@@ -90,6 +117,25 @@ function App() {
       >
         ⚙️
       </button>
+
+      <div className="spark-bar" onClick={(e) => e.stopPropagation()}>
+        {SPARK_LEVELS.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={`spark-button ${s.id === sparkLevelId ? 'active' : ''}`}
+            aria-label={`Spark level: ${s.label}`}
+            aria-pressed={s.id === sparkLevelId}
+            onClick={(e) => {
+              e.stopPropagation()
+              setSparkLevelId(s.id)
+            }}
+          >
+            <span className="spark-button-emoji">{s.emoji}</span>
+            <span className="spark-button-label">{s.label}</span>
+          </button>
+        ))}
+      </div>
 
       {settingsOpen && (
         <div className="settings-panel" onClick={(e) => e.stopPropagation()}>

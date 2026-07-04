@@ -2,11 +2,13 @@ import { useEffect, useRef } from 'react'
 import { createDiscoRenderer } from './discoRenderer'
 import { useMicLevel } from './useMicLevel'
 
-export function useDiscoLights(canvasRef, theme) {
+export function useDiscoLights(canvasRef, theme, sparkFactor = 1) {
   const mic = useMicLevel()
   const rendererRef = useRef(null)
   const themeRef = useRef(theme)
   themeRef.current = theme
+  const sparkFactorRef = useRef(sparkFactor)
+  sparkFactorRef.current = sparkFactor
 
   useEffect(() => {
     rendererRef.current = createDiscoRenderer(theme)
@@ -36,7 +38,7 @@ export function useDiscoLights(canvasRef, theme) {
 
     function tick(now) {
       const level = mic.sampleLevel(now)
-      rendererRef.current?.render(ctx, window.innerWidth, window.innerHeight, now, level)
+      rendererRef.current?.render(ctx, window.innerWidth, window.innerHeight, now, level, sparkFactorRef.current)
       rafId = requestAnimationFrame(tick)
     }
     rafId = requestAnimationFrame(tick)
