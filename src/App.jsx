@@ -118,6 +118,20 @@ function App() {
         ⚙️
       </button>
 
+      <button
+        type="button"
+        className={`mic-button mic-button-${micStatus}`}
+        aria-label={MIC_LABEL[micStatus]}
+        aria-pressed={micStatus === 'on'}
+        title={MIC_LABEL[micStatus]}
+        onClick={(e) => {
+          e.stopPropagation()
+          toggleMic()
+        }}
+      >
+        {micStatus === 'on' ? '🎤' : '🎙️'}
+      </button>
+
       <div className="spark-bar" onClick={(e) => e.stopPropagation()}>
         {SPARK_LEVELS.map((s) => (
           <button
@@ -167,10 +181,6 @@ function App() {
               </button>
             ))}
           </div>
-
-          <button type="button" className="panel-button" onClick={toggleMic}>
-            {MIC_LABEL[micStatus]}
-          </button>
 
           <button type="button" className="panel-button" onClick={toggleFullscreen}>
             {isFullscreen ? 'Exit fullscreen' : 'Go fullscreen ⛶'}

@@ -1,9 +1,12 @@
 import { lerpColor, toRgba, easeInOutQuad, clamp } from './colorUtils'
 
 const BEAM_COUNT = 10
-const SPARKLE_COUNT = 110
+const SPARKLE_COUNT = 220
 const GLINT_COUNT = 16
 const THEME_FADE_MS = 900
+// Fractional positions along each beam's length where a small twinkling
+// point-sparkle rides, so the beams themselves look sparkly, not just solid.
+const BEAM_SPARK_POSITIONS = [0.15, 0.35, 0.55, 0.75, 0.9]
 
 function randomRange(min, max) {
   return min + Math.random() * (max - min)
@@ -14,6 +17,8 @@ function createBeams() {
     i,
     wobble: Math.random() * Math.PI * 2,
     wobbleSpeed: randomRange(0.2, 0.5),
+    sparkPhases: BEAM_SPARK_POSITIONS.map(() => Math.random() * Math.PI * 2),
+    sparkSpeeds: BEAM_SPARK_POSITIONS.map(() => randomRange(3.5, 5.5)),
   }))
 }
 
@@ -108,7 +113,26 @@ export function createDiscoRenderer(initialTheme) {
       ctx.moveTo(0, 0)
       ctx.lineTo(x2, y2)
       ctx.stroke()
+
+      // Small twinkling sparkles riding along the beam, recomputed every
+      // frame from this beam's current angle/length so they travel and
+      // pulse with it as it rotates.
+      BEAM_SPARK_POSITIONS.forEach((t, si) => {
+        const twinkle = (Math.sin(now / 1000 * beam.sparkSpeeds[si] + beam.sparkPhases[si]) + 1) / 2
+        const bright = clamp(twinkle * (0.45 + level * 0.55) * sparkFactor, 0, 1)
+        if (bright < 0.04) return
+        const sx = Math.cos(angle) * beamLength * t
+        const sy = Math.sin(angle) * beamLength * t
+        const sSize = Math.min(width, height) * (0.005 + twinkle * 0.009) * clamp(sparkFactor, 0.6, 1.6)
+        ctx.beginPath()
+        ctx.arc(sx, sy, sSize, 0, Math.PI * 2)
+        ctx.fillStyle = toRgba([255, 255, 255], bright)
+        ctx.shadowColor = toRgba(color, bright)
+        ctx.shadowBlur = 10
+        ctx.fill()
+      })
     })
+    ctx.shadowBlur = 0
 
     // Centre disco ball
     const ballR = Math.min(width, height) * 0.085
@@ -147,9 +171,13 @@ export function createDiscoRenderer(initialTheme) {
     // Twinkling sparkles across the whole sky
     ctx.globalCompositeOperation = 'lighter'
     sparkles.forEach((p) => {
-      const twinkle = (Math.sin((now / 1000) * p.speed + p.phase) + 1) / 2
-      const alpha = clamp(twinkle * (0.55 + level * 0.45) * sparkFactor, 0, 1)
-      if (twinkle < 0.02 && Math.random() < 0.02) {
+      const rawTwinkle = (Math.sin((now / 1000) * p.speed + p.phase) + 1) / 2
+      // Never let a sparkle fully vanish, even at the calm spark level —
+      // a small floor keeps the whole field readable as "many sparkles"
+      // instead of most of them sitting invisible between twinkle peaks.
+      const twinkle = Math.max(rawTwinkle, 0.22)
+      const alpha = clamp(twinkle * (0.55 + level * 0.45) * clamp(sparkFactor, 0.65, 1.8), 0.08, 1)
+      if (rawTwinkle < 0.02 && Math.random() < 0.02) {
         p.x = Math.random()
         p.y = Math.random()
       }

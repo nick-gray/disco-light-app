@@ -61,6 +61,60 @@
   transform: scale(1.08);
 }
 
+.mic-button {
+  position: absolute;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.mic-button:hover,
+.mic-button:focus-visible {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+.mic-button:active {
+  transform: scale(0.94);
+}
+
+.mic-button-on {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.28);
+  opacity: 1;
+}
+
+.mic-button-requesting {
+  opacity: 0.85;
+  animation: mic-pulse 1s ease-in-out infinite;
+}
+
+.mic-button-denied,
+.mic-button-unsupported {
+  opacity: 0.4;
+}
+
+@keyframes mic-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 .spark-bar {
   position: absolute;
   bottom: max(14px, env(safe-area-inset-bottom));
